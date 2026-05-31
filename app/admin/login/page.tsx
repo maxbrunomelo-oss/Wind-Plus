@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 
 function getSupabaseClient() {
@@ -20,16 +21,10 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     try {
       const supabase = getSupabaseClient();
       const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
-      if (authError || !data.session) {
-        setError("E-mail ou senha incorretos.");
-        return;
-      }
-
-      // Store token in cookie (server pages will validate against ADMIN_EMAILS)
+      if (authError || !data.session) { setError("E-mail ou senha incorretos."); return; }
       document.cookie = `admin_token=${data.session.access_token}; path=/; max-age=86400; SameSite=Lax`;
       window.location.href = "/admin/placement-results";
     } catch {
@@ -40,51 +35,40 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
-        <div className="text-center mb-6">
-          <span className="text-2xl font-extrabold text-blue-700">Wind Plus</span>
-          <p className="text-xs text-gray-500 mt-1">Área administrativa</p>
+    <main className="min-h-screen bg-[#111111] flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Image src="/logo-wind-plus.png" alt="Wind Plus" width={180} height={40}
+            className="h-10 w-auto object-contain mx-auto brightness-0 invert" />
+          <p className="text-xs text-gray-500 mt-2 uppercase tracking-widest">Área administrativa</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="seu@email.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="••••••••"
-            />
-          </div>
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E30613]/40"
+                placeholder="seu@email.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+              <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E30613]/40"
+                placeholder="••••••••" />
+            </div>
 
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+            )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
-          >
-            {loading ? "Entrando..." : "Entrar"}
-          </button>
-        </form>
+            <button type="submit" disabled={loading}
+              className="w-full bg-[#E30613] hover:bg-[#B8000D] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60">
+              {loading ? "Entrando..." : "Entrar"}
+            </button>
+          </form>
+        </div>
       </div>
     </main>
   );

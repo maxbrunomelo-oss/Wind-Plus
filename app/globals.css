@@ -2,7 +2,14 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111111;
+
+  /* Wind Plus Brand */
+  --wp-red: #E30613;
+  --wp-red-dark: #B8000D;
+  --wp-red-light: #FF1A27;
+  --wp-dark: #111111;
+  --wp-gray: #F5F5F5;
 }
 
 @theme inline {
@@ -10,13 +17,12 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Wind Plus theme tokens */
+  --color-wp-red: var(--wp-red);
+  --color-wp-red-dark: var(--wp-red-dark);
+  --color-wp-red-light: var(--wp-red-light);
+  --color-wp-dark: var(--wp-dark);
 }
 
 body {

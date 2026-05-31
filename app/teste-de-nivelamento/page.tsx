@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import PlacementTestForm from "@/components/placement/PlacementTestForm";
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default function PlacementTestPage() {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="text-center max-w-sm">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Em breve</h1>
+          <h1 className="text-2xl font-bold text-[#111111] mb-2">Em breve</h1>
           <p className="text-gray-500">O teste de nivelamento estará disponível em breve.</p>
         </div>
       </main>
@@ -22,16 +23,41 @@ export default function PlacementTestPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-10 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Logo / brand header */}
-        <div className="text-center mb-10">
-          <span className="text-2xl font-extrabold text-blue-700 tracking-tight">Wind Plus</span>
-          <p className="text-gray-500 text-xs mt-1">Escola de Inglês</p>
+    <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-100 shadow-sm">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo-wind-plus.png"
+              alt="Wind Plus"
+              width={36}
+              height={36}
+              priority
+              className="h-9 w-9 object-contain"
+            />
+            <div className="leading-tight">
+              <span className="block text-lg font-extrabold text-[#111111] tracking-tight">Wind Plus</span>
+              <span className="block text-[10px] text-gray-400 uppercase tracking-widest -mt-0.5">Escola de Inglês</span>
+            </div>
+          </div>
+          <span className="hidden sm:inline-block text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+            Teste de Nivelamento CEFR
+          </span>
         </div>
+      </header>
 
+      {/* Content */}
+      <main className="flex-1 py-10 px-4">
         <PlacementTestForm />
-      </div>
-    </main>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-100 py-5 text-center">
+        <p className="text-xs text-gray-400">
+          © {new Date().getFullYear()} Wind Plus. Todos os direitos reservados.
+        </p>
+      </footer>
+    </div>
   );
 }

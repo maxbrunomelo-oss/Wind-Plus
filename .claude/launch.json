@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wind-plus-dev",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/start-wind-plus.py"],
+      "port": 3000
+    }
+  ]
+}
