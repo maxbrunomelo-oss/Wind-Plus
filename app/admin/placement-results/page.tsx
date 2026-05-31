@@ -1,37 +1,16 @@
-import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import PlacementResultsTable from "@/components/admin/PlacementResultsTable";
-import { cookies } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
-
-async function getAuthenticatedAdminEmail(): Promise<string | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("admin_token")?.value;
-    if (!token) return null;
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      { global: { headers: { Authorization: `Bearer ${token}` } } }
-    );
-
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user?.email) return null;
-
-    const allowed = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase());
-    return allowed.includes(user.email.toLowerCase()) ? user.email : null;
-  } catch {
-    return null;
-  }
-}
+import { createClient } from "@/utils/supabase/server";
+import Image from "next/image";
 
 export default async function AdminPlacementResultsPage() {
-  const adminEmail = await getAuthenticatedAdminEmail();
-  if (!adminEmail) redirect("/admin/login");
+  // Get current user from session (middleware already validated access)
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const supabase = createAdminClient();
-  const { data: results, error } = await supabase
+  // Load results via service role (bypasses RLS)
+  const adminSupabase = createAdminClient();
+  const { data: results, error } = await adminSupabase
     .from("placement_test_results")
     .select(
       "id, student_name, email, phone, age, objective, raw_score, max_score, percentage, cefr_level, writing_answer, created_at"
@@ -50,15 +29,26 @@ export default async function AdminPlacementResultsPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Resultados do Teste de Nivelamento</h1>
-            <p className="text-sm text-gray-500 mt-1">Wind Plus — Painel Administrativo</p>
+      {/* Admin header */}
+      <header className="bg-[#111111] border-b border-white/5 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Image src="/logo-wind-plus.png" alt="Wind Plus" width={32} height={32}
+              className="h-8 w-8 object-contain brightness-0 invert" />
+            <span className="text-white font-bold tracking-tight">Wind Plus</span>
+            <span className="hidden sm:block text-gray-500 text-xs ml-2 border-l border-gray-700 pl-2">
+              Painel Administrativo
+            </span>
           </div>
-          <span className="text-xs text-gray-400">{adminEmail}</span>
+          <span className="text-xs text-gray-500">{user?.email}</span>
         </div>
+      </header>
 
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-[#111111]">Resultados do Teste de Nivelamento</h1>
+          <p className="text-sm text-gray-400 mt-1">{results?.length ?? 0} respostas recebidas</p>
+        </div>
         <PlacementResultsTable results={results ?? []} />
       </div>
     </main>
