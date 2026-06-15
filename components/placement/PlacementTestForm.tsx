@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
 import { placementQuestions, writingPrompt, CefrLevel } from "@/lib/placement/cefrQuestions";
 import { BandStats } from "@/lib/placement/scoring";
 import ProgressBar from "./ProgressBar";
 import QuestionCard from "./QuestionCard";
 import ResultCard from "./ResultCard";
+import WindPlusWordmark from "@/components/ui/WindPlusWordmark";
 
 type Step = "intro" | "form" | "test" | "writing" | "result";
 
@@ -68,6 +69,11 @@ export default function PlacementTestForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [result, setResult] = useState<ResultData | null>(null);
 
+  // Timing
+  const testStartRef = useRef<number | null>(null);
+  const questionStartRef = useRef<number>(Date.now());
+  const [questionTimings, setQuestionTimings] = useState<Record<string, number>>({});
+
   const totalQuestions = placementQuestions.length;
   const currentQuestion = placementQuestions[currentQuestionIdx];
   const isUnder18 = studentInfo.age !== "" && parseInt(studentInfo.age) < 18;
@@ -87,19 +93,32 @@ export default function PlacementTestForm() {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) setStep("test");
+    if (validateForm()) {
+      testStartRef.current = Date.now();
+      questionStartRef.current = Date.now();
+      setStep("test");
+    }
   };
 
   const handleSelectOption = useCallback((optionId: string) => {
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: optionId }));
   }, [currentQuestion]);
 
+  const recordQuestionTiming = useCallback(() => {
+    const elapsed = Math.round((Date.now() - questionStartRef.current) / 1000);
+    const qId = placementQuestions[currentQuestionIdx].id;
+    setQuestionTimings((prev) => ({ ...prev, [qId]: (prev[qId] ?? 0) + elapsed }));
+    questionStartRef.current = Date.now();
+  }, [currentQuestionIdx]);
+
   const handleNextQuestion = () => {
+    recordQuestionTiming();
     if (currentQuestionIdx < totalQuestions - 1) setCurrentQuestionIdx((i) => i + 1);
     else setStep("writing");
   };
 
   const handlePrevQuestion = () => {
+    recordQuestionTiming();
     if (currentQuestionIdx > 0) setCurrentQuestionIdx((i) => i - 1);
   };
 
@@ -118,6 +137,10 @@ export default function PlacementTestForm() {
         responsibleConsent: studentInfo.responsibleConsent || undefined,
         objectiveAnswers: answers,
         writingAnswer: writingAnswer || undefined,
+        durationSeconds: testStartRef.current
+          ? Math.round((Date.now() - testStartRef.current) / 1000)
+          : undefined,
+        questionTimings,
       };
       const res = await fetch("/api/placement-test/submit", {
         method: "POST",
@@ -138,19 +161,87 @@ export default function PlacementTestForm() {
   // ── INTRO ──────────────────────────────────────────────────────────────────
   if (step === "intro") {
     return (
-      <div className="text-center max-w-xl mx-auto py-8 px-4">
-        <span className="inline-block bg-[#E30613]/10 text-[#E30613] text-xs font-semibold px-3 py-1 rounded-full mb-6 uppercase tracking-widest">
-          Diagnóstico CEFR gratuito
-        </span>
-        <h1 className="text-3xl md:text-4xl font-bold text-[#111111] mb-4 leading-tight">
-          Descubra seu nível de inglês com a Wind Plus
+      <div className="text-center max-w-2xl mx-auto py-10 px-4">
+
+        {/* Logos */}
+        <div className="flex items-center justify-center gap-10 mb-10">
+          {/* Wind Plus logo + stacked wordmark */}
+          <div className="flex flex-col items-center gap-1">
+            <Image
+              src="/logo-wind-plus-hd.png"
+              alt="Wind Plus"
+              width={110}
+              height={110}
+              className="object-contain drop-shadow-md"
+            />
+            <WindPlusWordmark
+              variant="stacked"
+              windSize="text-2xl"
+              plusSize="text-[11px]"
+              windColor="text-[#111111]"
+              plusColor="text-[#E30613]"
+            />
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-20 bg-gray-200" />
+
+          {/* CEFR badge */}
+          <div className="flex flex-col items-center gap-2">
+            {/* Stars ring + CEFR text */}
+            <div className="relative flex items-center justify-center w-[110px] h-[110px]">
+              {/* Outer ring of stars */}
+              <svg viewBox="0 0 110 110" className="absolute inset-0 w-full h-full" aria-hidden="true">
+                <circle cx="55" cy="55" r="52" fill="none" stroke="#003399" strokeWidth="2.5" />
+                {Array.from({ length: 12 }).map((_, i) => {
+                  const angle = (i * 30 - 90) * (Math.PI / 180);
+                  const cx = 55 + 44 * Math.cos(angle);
+                  const cy = 55 + 44 * Math.sin(angle);
+                  return (
+                    <text key={i} x={cx} y={cy} textAnchor="middle" dominantBaseline="central" fontSize="9" fill="#FFCC00">★</text>
+                  );
+                })}
+              </svg>
+              {/* Inner text */}
+              <div className="flex flex-col items-center leading-none z-10">
+                <span className="text-[22px] font-black text-[#003399] tracking-tight">CEFR</span>
+                <span className="text-[7px] font-bold text-[#003399] uppercase tracking-widest text-center leading-tight mt-0.5">Common European<br/>Framework</span>
+              </div>
+            </div>
+            {/* Level badges */}
+            <div className="grid grid-cols-3 gap-1 mt-1">
+              {[
+                { label: "A1", bg: "#5BC8C1" },
+                { label: "B1", bg: "#F5C242" },
+                { label: "C1", bg: "#4A90D9" },
+                { label: "A2", bg: "#6BBF6A" },
+                { label: "B2", bg: "#4CAF50" },
+                { label: "C2", bg: "#E8943A" },
+              ].map(({ label, bg }) => (
+                <div
+                  key={label}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-black shadow-sm"
+                  style={{ backgroundColor: bg }}
+                >
+                  {label}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Headline */}
+        <h1 className="text-3xl md:text-4xl font-bold text-[#111111] mb-3 leading-tight">
+          Descubra o seu nível de Inglês
         </h1>
         <p className="text-gray-500 text-base md:text-lg mb-6 leading-relaxed">
           Faça um teste rápido baseado no CEFR e receba uma orientação inicial sobre o seu nível de fluência.
         </p>
+
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 mb-8 text-left">
           <strong>Aviso importante:</strong> Este teste é uma avaliação diagnóstica inicial. Ele não substitui uma certificação oficial de proficiência, mas ajuda nossa equipe pedagógica a indicar a melhor turma para o seu perfil.
         </div>
+
         <button
           onClick={() => setStep("form")}
           className="bg-[#E30613] hover:bg-[#B8000D] text-white font-semibold px-8 py-4 rounded-xl text-base transition-colors shadow-md"

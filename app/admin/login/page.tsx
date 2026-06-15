@@ -18,13 +18,13 @@ export default function AdminLoginPage() {
       const supabase = createClient();
       const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError || !data.session) {
-        setError("E-mail ou senha incorretos.");
+        setError(authError?.message ?? "E-mail ou senha incorretos.");
         return;
       }
       // Session is stored in cookies automatically by @supabase/ssr
-      window.location.href = "/admin/placement-results";
-    } catch {
-      setError("Erro inesperado. Tente novamente.");
+      window.location.href = "/admin";
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro inesperado. Tente novamente.");
     } finally {
       setLoading(false);
     }

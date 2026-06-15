@@ -3,30 +3,54 @@ import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from '@/components/windos/Sidebar';
 import Topbar from '@/components/windos/Topbar';
-import { currentUser } from '@/lib/windos/mock-data';
-import type { Profile } from '@/lib/windos/types';
+import { createClient } from '@/utils/supabase/client';
+import type { Profile, UserRole } from '@/lib/windos/types';
 
 export default function WindOsLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [checked, setChecked] = useState(false);
-  const [user, setUser] = useState<Profile>(currentUser);
+  const [user, setUser] = useState<Profile | null>(null);
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     if (pathname === '/wind-os/login') { setChecked(true); return; }
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('windos_user') : null;
-    if (!stored) {
-      router.replace('/wind-os/login');
-    } else {
-      try { setUser({ ...currentUser, ...JSON.parse(stored) }); } catch { /* ignore */ }
+
+    let active = true;
+    (async () => {
+      const supabase = createClient();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+
+      if (!authUser) {
+        router.replace('/wind-os/login');
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('wind_profiles')
+        .select('id, name, email, role, status, avatar_url')
+        .eq('id', authUser.id)
+        .single();
+
+      if (!active) return;
+
+      setUser({
+        id: authUser.id,
+        name: profile?.name ?? authUser.email?.split('@')[0] ?? 'Usuário',
+        email: profile?.email ?? authUser.email ?? '',
+        role: (profile?.role as UserRole) ?? 'ADMIN',
+        status: profile?.status ?? 'ATIVO',
+        avatar: profile?.avatar_url ?? undefined,
+      });
       setChecked(true);
-    }
+    })();
+
+    return () => { active = false; };
   }, [pathname, router]);
 
   if (pathname === '/wind-os/login') return <>{children}</>;
 
-  if (!checked) {
+  if (!checked || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3">

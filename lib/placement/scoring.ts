@@ -100,7 +100,6 @@ export function calculatePlacementResult(
   else cefrLevel = "starter";
 
   // Consistency check: don't classify above a level if lower bands are weak
-  const levelIdx = LEVEL_ORDER.indexOf(cefrLevel);
   if (cefrLevel === "C1" && bandStats.B2.percentage < 50) {
     cefrLevel = "B2";
   }

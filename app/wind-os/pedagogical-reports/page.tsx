@@ -1,13 +1,18 @@
-'use client';
 import React from 'react';
 import Link from 'next/link';
 import Badge, { reportStatusBadge, cefrBadge } from '@/components/windos/Badge';
 import { HBarChart } from '@/components/windos/Charts';
 import { IconPlus, IconReport, IconAI, IconDownload } from '@/components/windos/Icons';
 import { EmptyState } from '@/components/windos/States';
-import { pedagogicalReports, studentName, teacherName } from '@/lib/windos/mock-data';
+import { getPedagogicalReports, getStudents, getTeachers, nameMap } from '@/lib/windos/data';
 
-export default function PedagogicalReportsPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function PedagogicalReportsPage() {
+  const [pedagogicalReports, students, teachers] = await Promise.all([getPedagogicalReports(), getStudents(), getTeachers()]);
+  const studentNameById = nameMap(students, s => s.fullName);
+  const teacherNameById = nameMap(teachers, t => t.name);
+
   return (
     <div className="p-4 lg:p-6 space-y-5 max-w-screen-2xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -23,7 +28,7 @@ export default function PedagogicalReportsPage() {
             return (
               <div key={r.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Link href={`/wind-os/students/${r.studentId}`} className="text-sm font-semibold text-gray-900 hover:text-[#E30613]">{studentName(r.studentId)}</Link>
+                  <Link href={`/wind-os/students/${r.studentId}`} className="text-sm font-semibold text-gray-900 hover:text-[#E30613]">{studentNameById[r.studentId] ?? '—'}</Link>
                   <Badge label={cf.label} variant={cf.variant} />
                   <Badge label={b.label} variant={b.variant} />
                   <span className="text-xs text-gray-400 ml-auto">{r.referencePeriod}</span>
@@ -38,7 +43,7 @@ export default function PedagogicalReportsPage() {
                 </div>
                 {r.teacherComments && <p className="text-sm text-gray-600 mt-3">{r.teacherComments}</p>}
                 <div className="flex items-center gap-2 mt-3 text-xs text-gray-400">
-                  <span>Prof. {teacherName(r.teacherId)}</span>
+                  <span>Prof. {teacherNameById[r.teacherId] ?? '—'}</span>
                   <div className="ml-auto flex gap-2">
                     <button className="flex items-center gap-1 text-[#E30613] border border-red-200 bg-red-50 rounded-lg px-2.5 py-1 font-medium hover:bg-red-100"><IconAI size={13} /> Gerar com IA</button>
                     <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-50"><IconDownload size={13} /> PDF</button>

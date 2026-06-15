@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import PlacementTestForm from "@/components/placement/PlacementTestForm";
+import WindPlusWordmark from "@/components/ui/WindPlusWordmark";
 
 export const metadata: Metadata = {
   title: "Teste de Nivelamento de Inglês | Wind Plus",
@@ -29,17 +30,14 @@ export default function PlacementTestPage() {
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Image
-              src="/logo-wind-plus.png"
+              src="/logo-wind-plus-hd.png"
               alt="Wind Plus"
-              width={36}
-              height={36}
+              width={56}
+              height={56}
               priority
-              className="h-9 w-9 object-contain"
+              className="h-14 w-14 object-contain"
             />
-            <div className="leading-tight">
-              <span className="block text-lg font-extrabold text-[#111111] tracking-tight">Wind Plus</span>
-              <span className="block text-[10px] text-gray-400 uppercase tracking-widest -mt-0.5">Escola de Inglês</span>
-            </div>
+            <span className="text-[11px] text-gray-400 uppercase tracking-widest">Escola de Inglês</span>
           </div>
           <span className="hidden sm:inline-block text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
             Teste de Nivelamento CEFR

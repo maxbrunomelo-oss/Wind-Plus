@@ -10,6 +10,18 @@
   --wp-red-light: #FF1A27;
   --wp-dark: #111111;
   --wp-gray: #F5F5F5;
+
+  /* Eleva+ / Acelera+ Brand */
+  --el-orange: #F48B1B;
+  --el-orange-dark: #D4720E;
+  --el-orange-light: #FFA94D;
+  --el-blue: #2E8C99;
+  --el-blue-dark: #226E79;
+  --el-blue-light: #4BAAB6;
+  --el-black: #060606;
+  --el-bg: #F7F8FA;
+  --el-border: #E8EAED;
+  --el-text-muted: #6B7280;
 }
 
 @theme inline {
@@ -23,6 +35,18 @@
   --color-wp-red-dark: var(--wp-red-dark);
   --color-wp-red-light: var(--wp-red-light);
   --color-wp-dark: var(--wp-dark);
+
+  /* Eleva+ theme tokens */
+  --color-el-orange: var(--el-orange);
+  --color-el-orange-dark: var(--el-orange-dark);
+  --color-el-orange-light: var(--el-orange-light);
+  --color-el-blue: var(--el-blue);
+  --color-el-blue-dark: var(--el-blue-dark);
+  --color-el-blue-light: var(--el-blue-light);
+  --color-el-black: var(--el-black);
+  --color-el-bg: var(--el-bg);
+  --color-el-border: var(--el-border);
+  --color-el-muted: var(--el-text-muted);
 }
 
 body {

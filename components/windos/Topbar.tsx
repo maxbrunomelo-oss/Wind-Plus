@@ -3,6 +3,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { IconMenu, IconLogout, IconSearch } from './Icons';
 import { initials } from '@/lib/windos/format';
+import { createClient } from '@/utils/supabase/client';
 import type { Profile } from '@/lib/windos/types';
 
 const roleLabel: Record<string, string> = {
@@ -14,8 +15,9 @@ const roleLabel: Record<string, string> = {
 
 export default function Topbar({ user, onMenuClick }: { user: Profile; onMenuClick: () => void }) {
   const router = useRouter();
-  const logout = () => {
-    if (typeof window !== 'undefined') localStorage.removeItem('windos_user');
+  const logout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
     router.replace('/wind-os/login');
   };
   return (
