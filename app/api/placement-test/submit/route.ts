@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
       source: "website",
       user_agent: userAgent,
       ip_hash: ipHash,
+      duration_seconds: data.durationSeconds ?? null,
+      question_timings: data.questionTimings ?? null,
     });
 
     if (dbError) {

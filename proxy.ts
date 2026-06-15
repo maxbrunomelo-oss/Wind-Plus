@@ -37,6 +37,29 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Protect /wind-os routes (except /wind-os/login)
+  if (
+    request.nextUrl.pathname.startsWith("/wind-os") &&
+    !request.nextUrl.pathname.startsWith("/wind-os/login")
+  ) {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll() {},
+        },
+      }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.redirect(new URL("/wind-os/login", request.url));
+    }
+  }
+
   return response;
 }
 

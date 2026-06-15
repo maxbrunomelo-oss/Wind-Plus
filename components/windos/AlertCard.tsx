@@ -2,7 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 import type { Alert } from '@/lib/windos/types';
 import Badge, { priorityBadge, alertStatusBadge } from './Badge';
-import { studentName } from '@/lib/windos/mock-data';
 import { dateBR } from '@/lib/windos/format';
 import { IconAlert } from './Icons';
 
@@ -22,7 +21,7 @@ const borderByPriority: Record<string, string> = {
   BAIXA: 'border-l-gray-300',
 };
 
-export default function AlertCard({ alert, showStudent = true }: { alert: Alert; showStudent?: boolean }) {
+export default function AlertCard({ alert, showStudent = true, studentName }: { alert: Alert; showStudent?: boolean; studentName?: string }) {
   const p = priorityBadge(alert.priority);
   const s = alertStatusBadge(alert.status);
   return (
@@ -38,7 +37,7 @@ export default function AlertCard({ alert, showStudent = true }: { alert: Alert;
           <p className="text-sm text-gray-500 mt-1">{alert.description}</p>
           <div className="flex items-center gap-3 mt-2 text-xs text-gray-400 flex-wrap">
             <span>{alertTypeLabel[alert.alertType]}</span>
-            {showStudent && <Link href={`/wind-os/students/${alert.studentId}`} className="text-[#E30613] hover:underline font-medium">{studentName(alert.studentId)}</Link>}
+            {showStudent && <Link href={`/wind-os/students/${alert.studentId}`} className="text-[#E30613] hover:underline font-medium">{studentName ?? '—'}</Link>}
             {alert.dueDate && <span>Prazo: {dateBR(alert.dueDate)}</span>}
           </div>
         </div>

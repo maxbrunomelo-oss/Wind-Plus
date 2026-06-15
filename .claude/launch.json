@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "wind-plus-dev",
-      "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/start-wind-plus.py"],
+      "runtimeExecutable": "/Users/maxbruno/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "runtimeArgs": ["node_modules/next/dist/bin/next", "dev", "--webpack", "--port", "3000"],
       "port": 3000
     }
   ]

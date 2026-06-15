@@ -1,4 +1,3 @@
-'use client';
 import React from 'react';
 import Link from 'next/link';
 import StatCard from '@/components/windos/StatCard';
@@ -6,19 +5,31 @@ import { GroupedBarChart, DonutChart, LineChart, HBarChart } from '@/components/
 import AlertCard from '@/components/windos/AlertCard';
 import Badge, { paymentStatusBadge } from '@/components/windos/Badge';
 import {
-  IconStudents, IconFinance, IconAlert, IconTrend, IconClock, IconClasses, IconTeacher,
+  IconStudents, IconFinance, IconAlert, IconTrend, IconClock,
 } from '@/components/windos/Icons';
 import {
-  getDashboardStats, revenueEvolution, inadimplenciaEvolution, alerts,
-  proximosVencimentos, students, payments, studentName,
-} from '@/lib/windos/mock-data';
+  getStudents, getPayments, getAlerts, computeDashboardStats, nameMap,
+  revenueEvolution, inadimplenciaEvolution,
+} from '@/lib/windos/data';
 import { brl, dateBR } from '@/lib/windos/format';
 
-export default function Dashboard() {
-  const s = getDashboardStats();
+export const dynamic = 'force-dynamic';
+
+export default async function Dashboard() {
+  const [students, payments, alerts] = await Promise.all([
+    getStudents(), getPayments(), getAlerts(),
+  ]);
+  const s = computeDashboardStats(students, payments, alerts);
+  const studentNameById = nameMap(students, t => t.fullName);
+  const studentName = (id: string) => studentNameById[id] ?? '—';
+
+  const prio: Record<string, number> = { CRITICA: 0, ALTA: 1, MEDIA: 2, BAIXA: 3 };
   const openAlerts = alerts.filter(a => a.status !== 'RESOLVIDO' && a.status !== 'IGNORADO')
-    .sort((a, b) => ({ CRITICA: 0, ALTA: 1, MEDIA: 2, BAIXA: 3 }[a.priority] - { CRITICA: 0, ALTA: 1, MEDIA: 2, BAIXA: 3 }[b.priority]));
-  const vencimentos = proximosVencimentos().slice(0, 5);
+    .sort((a, b) => prio[a.priority] - prio[b.priority]);
+  const vencimentos = payments
+    .filter(p => p.status === 'PENDENTE' || p.status === 'ATRASADO')
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .slice(0, 5);
 
   const statusCount = (st: string) => payments.filter(p => p.status === st).length;
 
@@ -82,7 +93,7 @@ export default function Dashboard() {
             <Link href="/wind-os/alerts" className="text-xs text-[#E30613] hover:underline font-medium">Ver todos</Link>
           </div>
           <div className="space-y-3">
-            {openAlerts.slice(0, 4).map(a => <AlertCard key={a.id} alert={a} />)}
+            {openAlerts.slice(0, 4).map(a => <AlertCard key={a.id} alert={a} studentName={studentNameById[a.studentId]} />)}
           </div>
         </div>
         <div>

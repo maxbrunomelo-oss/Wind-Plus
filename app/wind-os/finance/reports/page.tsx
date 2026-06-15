@@ -1,13 +1,15 @@
-'use client';
 import React from 'react';
 import StatCard from '@/components/windos/StatCard';
 import { GroupedBarChart, DonutChart, LineChart } from '@/components/windos/Charts';
 import { IconFinance, IconTrend, IconDownload } from '@/components/windos/Icons';
-import { getDashboardStats, revenueEvolution, inadimplenciaEvolution, payments } from '@/lib/windos/mock-data';
+import { getStudents, getPayments, getAlerts, computeDashboardStats, revenueEvolution, inadimplenciaEvolution } from '@/lib/windos/data';
 import { brl } from '@/lib/windos/format';
 
-export default function FinanceReportsPage() {
-  const s = getDashboardStats();
+export const dynamic = 'force-dynamic';
+
+export default async function FinanceReportsPage() {
+  const [students, payments, alerts] = await Promise.all([getStudents(), getPayments(), getAlerts()]);
+  const s = computeDashboardStats(students, payments, alerts);
   const byStatus = (st: string) => payments.filter(p => p.status === st).reduce((a, p) => a + p.finalAmount, 0);
 
   return (

@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildCsv, resultsToCsvRows } from "@/lib/placement/csv";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 
 async function getAdminEmailFromRequest(req: NextRequest): Promise<string | null> {
   try {
-    const token = req.cookies.get("admin_token")?.value;
-    if (!token) return null;
-
-    const supabase = createClient(
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      { global: { headers: { Authorization: `Bearer ${token}` } } }
+      {
+        cookies: {
+          getAll() { return req.cookies.getAll(); },
+          setAll() {},
+        },
+      }
     );
-
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await supabase.auth.getUser();
     if (error || !user?.email) return null;
-
     const allowed = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase());
     return allowed.includes(user.email.toLowerCase()) ? user.email : null;
   } catch {

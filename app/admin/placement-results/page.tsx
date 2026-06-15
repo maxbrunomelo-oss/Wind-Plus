@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import PlacementResultsTable from "@/components/admin/PlacementResultsTable";
 import { createClient } from "@/utils/supabase/server";
-import Image from "next/image";
+import AdminHeader from "@/components/admin/AdminHeader";
 
 export default async function AdminPlacementResultsPage() {
   // Get current user from session (middleware already validated access)
@@ -29,20 +29,7 @@ export default async function AdminPlacementResultsPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* Admin header */}
-      <header className="bg-[#111111] border-b border-white/5 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Image src="/logo-wind-plus.png" alt="Wind Plus" width={32} height={32}
-              className="h-8 w-8 object-contain brightness-0 invert" />
-            <span className="text-white font-bold tracking-tight">Wind Plus</span>
-            <span className="hidden sm:block text-gray-500 text-xs ml-2 border-l border-gray-700 pl-2">
-              Painel Administrativo
-            </span>
-          </div>
-          <span className="text-xs text-gray-500">{user?.email}</span>
-        </div>
-      </header>
+      <AdminHeader userEmail={user?.email} activeTab="results" />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
