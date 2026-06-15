@@ -6,5 +6,11 @@ export const dynamic = 'force-dynamic';
 
 export default async function AlertsPage() {
   const [alerts, students] = await Promise.all([getAlerts(), getStudents()]);
-  return <AlertsView alerts={alerts} studentNameById={nameMap(students, s => s.fullName)} />;
+  return (
+    <AlertsView
+      alerts={alerts}
+      students={students.map(s => ({ id: s.id, name: s.fullName }))}
+      studentNameById={nameMap(students, s => s.fullName)}
+    />
+  );
 }

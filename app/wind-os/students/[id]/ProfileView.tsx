@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Badge, {
   studentStatusBadge, modalidadeBadge, cefrBadge, paymentStatusBadge, reportStatusBadge,
 } from '@/components/windos/Badge';
@@ -12,11 +13,16 @@ import { EmptyState } from '@/components/windos/States';
 import {
   IconArrowLeft, IconWhatsapp, IconMail, IconFinance, IconReport, IconDoc, IconEdit,
 } from '@/components/windos/Icons';
+import { FormModal, FieldDef, FormValues } from '@/components/windos/Modal';
+import { saveStudent } from '@/app/wind-os/actions';
 import { brl, dateBR, initials } from '@/lib/windos/format';
 import type { Student, Guardian, Payment, StudentLog, Alert, PedagogicalReport } from '@/lib/windos/types';
 
 const tabs = ['Visão geral', 'Financeiro', 'Pedagógico', 'CRM / Histórico', 'Relatórios', 'Documentos'] as const;
 type Tab = typeof tabs[number];
+
+const CEFR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const STATUS = ['ATIVO', 'PAUSADO', 'CANCELADO', 'EXPERIMENTAL', 'INADIMPLENTE'];
 
 interface Props {
   student: Student;
@@ -30,10 +36,39 @@ interface Props {
   className: string;
   teacherName: string;
   teacherNameById: Record<string, string>;
+  teachers: { id: string; name: string }[];
+  classes: { id: string; name: string }[];
 }
 
-export default function ProfileView({ student, guardians, payments, logs, alerts, reports, revenue, open, className, teacherName, teacherNameById }: Props) {
+export default function ProfileView({ student, guardians, payments, logs, alerts, reports, revenue, open, className, teacherName, teacherNameById, teachers, classes }: Props) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>('Visão geral');
+  const [editOpen, setEditOpen] = useState(false);
+
+  const editFields: FieldDef[] = [
+    { name: 'fullName', label: 'Nome completo', type: 'text', required: true },
+    { name: 'email', label: 'E-mail', type: 'email', required: true, half: true },
+    { name: 'whatsapp', label: 'WhatsApp', type: 'tel', required: true, half: true },
+    { name: 'cpf', label: 'CPF', type: 'text', half: true },
+    { name: 'birthDate', label: 'Nascimento', type: 'date', half: true },
+    { name: 'modalidade', label: 'Modalidade', type: 'select', required: true, half: true, options: [{ value: 'ONLINE', label: 'Online' }, { value: 'PRESENCIAL', label: 'Presencial' }] },
+    { name: 'status', label: 'Status', type: 'select', half: true, options: STATUS.map(s => ({ value: s, label: studentStatusBadge(s).label })) },
+    { name: 'cefrLevel', label: 'Nível CEFR', type: 'select', half: true, options: CEFR.map(c => ({ value: c, label: c })) },
+    { name: 'startDate', label: 'Data de entrada', type: 'date', half: true },
+    { name: 'teacherId', label: 'Professor', type: 'select', half: true, options: teachers.map(t => ({ value: t.id, label: t.name })) },
+    { name: 'classId', label: 'Turma', type: 'select', half: true, options: classes.map(c => ({ value: c.id, label: c.name })) },
+    { name: 'goal', label: 'Objetivo', type: 'text' },
+    { name: 'interests', label: 'Interesses', type: 'text' },
+    { name: 'pedagogicalNotes', label: 'Observações pedagógicas', type: 'textarea' },
+  ];
+
+  const editInitial: FormValues = {
+    fullName: student.fullName, email: student.email, whatsapp: student.whatsapp, cpf: student.cpf ?? '',
+    birthDate: student.birthDate ?? '', modalidade: student.modalidade, status: student.status,
+    cefrLevel: student.cefrLevel, startDate: student.startDate ?? '', teacherId: student.teacherId ?? '',
+    classId: student.classId ?? '', goal: student.goal ?? '', interests: student.interests ?? '',
+    pedagogicalNotes: student.pedagogicalNotes ?? '',
+  };
 
   const st = studentStatusBadge(student.status);
   const md = modalidadeBadge(student.modalidade);
@@ -59,9 +94,24 @@ export default function ProfileView({ student, guardians, payments, logs, alerts
               <span className="flex items-center gap-1.5"><IconWhatsapp size={14} /> {student.whatsapp}</span>
             </div>
           </div>
-          <button className="flex items-center gap-1.5 text-sm border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 font-medium"><IconEdit size={15} /> Editar</button>
+          <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 text-sm border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 font-medium"><IconEdit size={15} /> Editar</button>
         </div>
       </div>
+
+      <FormModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        title="Editar aluno"
+        subtitle={student.fullName}
+        fields={editFields}
+        initial={editInitial}
+        submitLabel="Salvar alterações"
+        onSubmit={async (values) => {
+          const res = await saveStudent(values, student.id);
+          if (res.ok) router.refresh();
+          return res;
+        }}
+      />
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-200 overflow-x-auto">

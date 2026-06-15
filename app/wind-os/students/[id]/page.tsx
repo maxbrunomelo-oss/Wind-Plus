@@ -41,6 +41,8 @@ export default async function StudentProfile({ params }: { params: Promise<{ id:
       className={(student.classId && classNameById[student.classId]) || '—'}
       teacherName={(student.teacherId && teacherNameById[student.teacherId]) || '—'}
       teacherNameById={teacherNameById}
+      teachers={teachers.map(t => ({ id: t.id, name: t.name }))}
+      classes={classes.map(c => ({ id: c.id, name: c.name }))}
     />
   );
 }

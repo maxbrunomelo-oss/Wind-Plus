@@ -2,9 +2,10 @@ import React from 'react';
 import Link from 'next/link';
 import Badge, { reportStatusBadge, cefrBadge } from '@/components/windos/Badge';
 import { HBarChart } from '@/components/windos/Charts';
-import { IconPlus, IconReport, IconAI, IconDownload } from '@/components/windos/Icons';
+import { IconReport, IconAI, IconDownload } from '@/components/windos/Icons';
 import { EmptyState } from '@/components/windos/States';
 import { getPedagogicalReports, getStudents, getTeachers, nameMap } from '@/lib/windos/data';
+import ReportCreateButton from './ReportCreateButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,10 @@ export default async function PedagogicalReportsPage() {
     <div className="p-4 lg:p-6 space-y-5 max-w-screen-2xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><h1 className="text-xl font-bold text-gray-900">Relatórios Pedagógicos</h1><p className="text-sm text-gray-500">Acompanhamento de progresso por habilidade CEFR</p></div>
-        <button className="flex items-center gap-1.5 text-sm bg-[#E30613] hover:bg-[#B8000D] text-white rounded-lg px-4 py-2 font-medium"><IconPlus size={16} /> Novo relatório</button>
+        <ReportCreateButton
+          students={students.map(s => ({ id: s.id, name: s.fullName }))}
+          teachers={teachers.map(t => ({ id: t.id, name: t.name }))}
+        />
       </div>
 
       {pedagogicalReports.length === 0 ? <EmptyState title="Nenhum relatório" icon={<IconReport size={22} />} /> : (

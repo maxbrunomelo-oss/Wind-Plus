@@ -10,6 +10,7 @@ export default async function StudentsPage() {
     <StudentsView
       students={students}
       teachers={teachers.map(t => ({ id: t.id, name: t.name }))}
+      classes={classes.map(c => ({ id: c.id, name: c.name }))}
       teacherNameById={nameMap(teachers, t => t.name)}
       classNameById={nameMap(classes, c => c.name)}
     />

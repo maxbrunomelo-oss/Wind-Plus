@@ -1,10 +1,13 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Badge, { sentimentBadge } from '@/components/windos/Badge';
 import { IconPlus, IconLog } from '@/components/windos/Icons';
 import { EmptyState } from '@/components/windos/States';
+import { FormModal, FieldDef } from '@/components/windos/Modal';
 import { dateBR } from '@/lib/windos/format';
+import { saveStudentLog } from '@/app/wind-os/actions';
 import type { StudentLog, Student } from '@/lib/windos/types';
 
 const logTypeLabel: Record<string, string> = {
@@ -20,8 +23,20 @@ interface Props {
 }
 
 export default function StudentLogsView({ logs, students, studentNameById }: Props) {
+  const router = useRouter();
   const [type, setType] = useState('');
   const [student, setStudent] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const fields: FieldDef[] = [
+    { name: 'studentId', label: 'Aluno', type: 'select', required: true, options: students.map(s => ({ value: s.id, label: s.fullName })) },
+    { name: 'logType', label: 'Tipo', type: 'select', half: true, options: Object.entries(logTypeLabel).map(([k, v]) => ({ value: k, label: v })) },
+    { name: 'sentiment', label: 'Sentimento', type: 'select', half: true, options: ['POSITIVO', 'NEUTRO', 'NEGATIVO', 'RISCO'].map(s => ({ value: s, label: s })) },
+    { name: 'title', label: 'Título', type: 'text', required: true },
+    { name: 'content', label: 'Conteúdo', type: 'textarea' },
+    { name: 'nextAction', label: 'Próxima ação', type: 'text', half: true },
+    { name: 'nextActionDate', label: 'Data da ação', type: 'date', half: true },
+  ];
 
   const filtered = useMemo(() => logs
     .filter(l => (!type || l.logType === type) && (!student || l.studentId === student))
@@ -33,7 +48,7 @@ export default function StudentLogsView({ logs, students, studentNameById }: Pro
     <div className="p-4 lg:p-6 space-y-5 max-w-screen-2xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><h1 className="text-xl font-bold text-gray-900">CRM / Registros</h1><p className="text-sm text-gray-500">Linha do tempo de interações com os alunos</p></div>
-        <button className="flex items-center gap-1.5 text-sm bg-[#E30613] hover:bg-[#B8000D] text-white rounded-lg px-4 py-2 font-medium"><IconPlus size={16} /> Novo registro</button>
+        <button onClick={() => setModalOpen(true)} className="flex items-center gap-1.5 text-sm bg-[#E30613] hover:bg-[#B8000D] text-white rounded-lg px-4 py-2 font-medium"><IconPlus size={16} /> Novo registro</button>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -67,6 +82,20 @@ export default function StudentLogsView({ logs, students, studentNameById }: Pro
           })}
         </div>
       )}
+
+      <FormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Novo registro"
+        subtitle="Registre uma interação na linha do tempo do aluno"
+        fields={fields}
+        submitLabel="Salvar registro"
+        onSubmit={async (values) => {
+          const res = await saveStudentLog(values);
+          if (res.ok) router.refresh();
+          return res;
+        }}
+      />
     </div>
   );
 }

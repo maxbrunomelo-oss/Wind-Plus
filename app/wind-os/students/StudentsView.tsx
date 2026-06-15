@@ -1,25 +1,62 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import DataTable, { Column } from '@/components/windos/DataTable';
 import Badge, { studentStatusBadge, modalidadeBadge, cefrBadge } from '@/components/windos/Badge';
-import { IconSearch, IconPlus, IconEye, IconStudents } from '@/components/windos/Icons';
+import { IconSearch, IconPlus, IconEye, IconEdit, IconStudents } from '@/components/windos/Icons';
 import { EmptyState } from '@/components/windos/States';
+import { FormModal, FieldDef, FormValues } from '@/components/windos/Modal';
 import { dateBR } from '@/lib/windos/format';
+import { saveStudent } from '@/app/wind-os/actions';
 import type { Student } from '@/lib/windos/types';
 
 interface Props {
   students: Student[];
   teachers: { id: string; name: string }[];
+  classes: { id: string; name: string }[];
   teacherNameById: Record<string, string>;
   classNameById: Record<string, string>;
 }
 
-export default function StudentsView({ students, teachers, teacherNameById, classNameById }: Props) {
+const CEFR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const STATUS = ['ATIVO', 'PAUSADO', 'CANCELADO', 'EXPERIMENTAL', 'INADIMPLENTE'];
+
+export default function StudentsView({ students, teachers, classes, teacherNameById, classNameById }: Props) {
+  const router = useRouter();
   const [q, setQ] = useState('');
   const [mod, setMod] = useState('');
   const [status, setStatus] = useState('');
   const [teacher, setTeacher] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Student | null>(null);
+
+  const fields: FieldDef[] = [
+    { name: 'fullName', label: 'Nome completo', type: 'text', required: true },
+    { name: 'email', label: 'E-mail', type: 'email', required: true, half: true },
+    { name: 'whatsapp', label: 'WhatsApp', type: 'tel', required: true, half: true },
+    { name: 'cpf', label: 'CPF', type: 'text', half: true },
+    { name: 'birthDate', label: 'Nascimento', type: 'date', half: true },
+    { name: 'modalidade', label: 'Modalidade', type: 'select', required: true, half: true, options: [{ value: 'ONLINE', label: 'Online' }, { value: 'PRESENCIAL', label: 'Presencial' }] },
+    { name: 'status', label: 'Status', type: 'select', half: true, options: STATUS.map(s => ({ value: s, label: studentStatusBadge(s).label })) },
+    { name: 'cefrLevel', label: 'Nível CEFR', type: 'select', half: true, options: CEFR.map(c => ({ value: c, label: c })) },
+    { name: 'startDate', label: 'Data de entrada', type: 'date', half: true },
+    { name: 'teacherId', label: 'Professor', type: 'select', half: true, options: teachers.map(t => ({ value: t.id, label: t.name })) },
+    { name: 'classId', label: 'Turma', type: 'select', half: true, options: classes.map(c => ({ value: c.id, label: c.name })) },
+    { name: 'goal', label: 'Objetivo', type: 'text' },
+    { name: 'interests', label: 'Interesses', type: 'text' },
+    { name: 'pedagogicalNotes', label: 'Observações pedagógicas', type: 'textarea' },
+  ];
+
+  const toInitial = (s: Student): FormValues => ({
+    fullName: s.fullName, email: s.email, whatsapp: s.whatsapp, cpf: s.cpf ?? '', birthDate: s.birthDate ?? '',
+    modalidade: s.modalidade, status: s.status, cefrLevel: s.cefrLevel, startDate: s.startDate ?? '',
+    teacherId: s.teacherId ?? '', classId: s.classId ?? '', goal: s.goal ?? '', interests: s.interests ?? '',
+    pedagogicalNotes: s.pedagogicalNotes ?? '',
+  });
+
+  const openNew = () => { setEditing(null); setModalOpen(true); };
+  const openEdit = (s: Student) => { setEditing(s); setModalOpen(true); };
 
   const teacherName = (id?: string) => (id && teacherNameById[id]) || '—';
   const className = (id?: string) => (id && classNameById[id]) || '—';
@@ -48,7 +85,10 @@ export default function StudentsView({ students, teachers, teacherNameById, clas
     { key: 'status', header: 'Status', render: s => { const b = studentStatusBadge(s.status); return <Badge label={b.label} variant={b.variant} />; } },
     {
       key: 'actions', header: '', className: 'text-right', render: s => (
-        <Link href={`/wind-os/students/${s.id}`} className="inline-flex items-center gap-1 text-[#E30613] hover:underline text-xs font-medium"><IconEye size={14} /> Perfil</Link>
+        <div className="flex items-center justify-end gap-3">
+          <button onClick={() => openEdit(s)} className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 text-xs font-medium"><IconEdit size={14} /> Editar</button>
+          <Link href={`/wind-os/students/${s.id}`} className="inline-flex items-center gap-1 text-[#E30613] hover:underline text-xs font-medium"><IconEye size={14} /> Perfil</Link>
+        </div>
       ),
     },
   ];
@@ -62,7 +102,7 @@ export default function StudentsView({ students, teachers, teacherNameById, clas
           <h1 className="text-xl font-bold text-gray-900">Alunos</h1>
           <p className="text-sm text-gray-500">{filtered.length} de {students.length} alunos</p>
         </div>
-        <button className="flex items-center gap-1.5 text-sm bg-[#E30613] hover:bg-[#B8000D] text-white rounded-lg px-4 py-2 font-medium transition-colors">
+        <button onClick={openNew} className="flex items-center gap-1.5 text-sm bg-[#E30613] hover:bg-[#B8000D] text-white rounded-lg px-4 py-2 font-medium transition-colors">
           <IconPlus size={16} /> Novo aluno
         </button>
       </div>
@@ -90,6 +130,21 @@ export default function StudentsView({ students, teachers, teacherNameById, clas
       <DataTable
         columns={columns} rows={filtered} rowKey={s => s.id}
         empty={<EmptyState title="Nenhum aluno encontrado" description="Ajuste os filtros ou cadastre um novo aluno." icon={<IconStudents size={22} />} />}
+      />
+
+      <FormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editing ? 'Editar aluno' : 'Novo aluno'}
+        subtitle={editing ? editing.fullName : 'Cadastre um novo aluno na escola'}
+        fields={fields}
+        initial={editing ? toInitial(editing) : undefined}
+        submitLabel={editing ? 'Salvar alterações' : 'Cadastrar aluno'}
+        onSubmit={async (values) => {
+          const res = await saveStudent(values, editing?.id);
+          if (res.ok) router.refresh();
+          return res;
+        }}
       />
     </div>
   );
