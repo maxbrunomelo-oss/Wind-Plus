@@ -61,6 +61,9 @@ export async function saveStudent(values: Values, id?: string): Promise<Result> 
     cefr_level: str(values.cefrLevel) || 'A1',
     teacher_id: orNull(values.teacherId), class_id: orNull(values.classId),
     start_date: str(values.startDate) || new Date().toISOString().slice(0, 10),
+    monthly_amount: num(values.monthlyAmount),
+    due_day: Math.min(Math.max(Number(str(values.dueDay) || '5'), 1), 28),
+    payment_method: str(values.paymentMethod) || 'PIX',
     goal: orNull(values.goal), interests: orNull(values.interests),
     pedagogical_notes: orNull(values.pedagogicalNotes),
   };
@@ -175,27 +178,30 @@ export async function markPaymentPaid(id: string, method = 'PIX'): Promise<Resul
   return { ok: true };
 }
 
-// Gera mensalidades do mês para todas as matrículas ativas (idempotente por enrollment+mês)
+// Gera mensalidades do mês a partir do valor de mensalidade cadastrado em cada
+// aluno ativo (idempotente: 1 mensalidade por aluno por mês de referência).
 export async function generateMonthlyPayments(referenceMonth: string): Promise<Result & { created?: number }> {
   const { admin, error } = await assertAdmin();
   if (!admin) return { ok: false, error: error! };
   if (!/^\d{4}-\d{2}$/.test(referenceMonth)) return { ok: false, error: 'Mês de referência inválido (use AAAA-MM).' };
 
-  const { data: enrolls, error: ee } = await admin.from('wind_enrollments').select('*').eq('status', 'ATIVA');
-  if (ee) return { ok: false, error: ee.message };
+  // Alunos com mensalidade definida e que não estejam cancelados.
+  const { data: students, error: se } = await admin
+    .from('wind_students').select('*').gt('monthly_amount', 0).neq('status', 'CANCELADO');
+  if (se) return { ok: false, error: se.message };
 
-  const { data: existing } = await admin.from('wind_payments').select('enrollment_id').eq('reference_month', referenceMonth);
-  const done = new Set((existing ?? []).map((p: { enrollment_id: string | null }) => p.enrollment_id));
+  const { data: existing } = await admin.from('wind_payments').select('student_id').eq('reference_month', referenceMonth);
+  const done = new Set((existing ?? []).map((p: { student_id: string }) => p.student_id));
 
-  const rows = (enrolls ?? [])
-    .filter(en => !done.has(en.id))
-    .map(en => {
-      const day = String(Math.min(Math.max(en.due_day ?? 5, 1), 28)).padStart(2, '0');
+  const rows = (students ?? [])
+    .filter(s => !done.has(s.id))
+    .map(s => {
+      const day = String(Math.min(Math.max(s.due_day ?? 5, 1), 28)).padStart(2, '0');
       return {
-        student_id: en.student_id, enrollment_id: en.id, reference_month: referenceMonth,
-        description: `Mensalidade ${referenceMonth}`, amount: en.monthly_amount,
-        discount_amount: en.discount_amount ?? 0, due_date: `${referenceMonth}-${day}`,
-        payment_method: en.payment_method, status: 'PENDENTE',
+        student_id: s.id, enrollment_id: null, reference_month: referenceMonth,
+        description: `Mensalidade ${referenceMonth}`, amount: s.monthly_amount,
+        discount_amount: 0, due_date: `${referenceMonth}-${day}`,
+        payment_method: s.payment_method ?? 'PIX', status: 'PENDENTE',
       };
     });
 

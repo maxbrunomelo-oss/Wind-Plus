@@ -23,6 +23,7 @@ type Tab = typeof tabs[number];
 
 const CEFR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const STATUS = ['ATIVO', 'PAUSADO', 'CANCELADO', 'EXPERIMENTAL', 'INADIMPLENTE'];
+const PAYMENT_METHODS = ['PIX', 'BOLETO', 'CARTAO', 'DINHEIRO', 'TRANSFERENCIA', 'OUTRO'];
 
 interface Props {
   student: Student;
@@ -57,6 +58,9 @@ export default function ProfileView({ student, guardians, payments, logs, alerts
     { name: 'startDate', label: 'Data de entrada', type: 'date', half: true },
     { name: 'teacherId', label: 'Professor', type: 'select', half: true, options: teachers.map(t => ({ value: t.id, label: t.name })) },
     { name: 'classId', label: 'Turma', type: 'select', half: true, options: classes.map(c => ({ value: c.id, label: c.name })) },
+    { name: 'monthlyAmount', label: 'Valor da mensalidade (R$)', type: 'number', half: true, step: '0.01', min: 0, help: 'Usado para gerar as mensalidades no Financeiro.' },
+    { name: 'dueDay', label: 'Dia de vencimento', type: 'number', half: true, min: 1, max: 28 },
+    { name: 'paymentMethod', label: 'Forma de pagamento', type: 'select', half: true, options: PAYMENT_METHODS.map(m => ({ value: m, label: m })) },
     { name: 'goal', label: 'Objetivo', type: 'text' },
     { name: 'interests', label: 'Interesses', type: 'text' },
     { name: 'pedagogicalNotes', label: 'Observações pedagógicas', type: 'textarea' },
@@ -66,7 +70,9 @@ export default function ProfileView({ student, guardians, payments, logs, alerts
     fullName: student.fullName, email: student.email, whatsapp: student.whatsapp, cpf: student.cpf ?? '',
     birthDate: student.birthDate ?? '', modalidade: student.modalidade, status: student.status,
     cefrLevel: student.cefrLevel, startDate: student.startDate ?? '', teacherId: student.teacherId ?? '',
-    classId: student.classId ?? '', goal: student.goal ?? '', interests: student.interests ?? '',
+    classId: student.classId ?? '',
+    monthlyAmount: String(student.monthlyAmount ?? 0), dueDay: String(student.dueDay ?? 5), paymentMethod: student.paymentMethod ?? 'PIX',
+    goal: student.goal ?? '', interests: student.interests ?? '',
     pedagogicalNotes: student.pedagogicalNotes ?? '',
   };
 
@@ -138,6 +144,7 @@ export default function ProfileView({ student, guardians, payments, logs, alerts
               <Field label="Turma" value={className} />
               <Field label="Professor" value={teacherName} />
               <Field label="Data de entrada" value={dateBR(student.startDate)} />
+              <Field label="Mensalidade" value={student.monthlyAmount > 0 ? `${brl(student.monthlyAmount)} · vence dia ${student.dueDay} · ${student.paymentMethod}` : '—'} />
               <Field label="Nascimento" value={dateBR(student.birthDate)} />
               <Field label="CPF" value={student.cpf ?? '—'} />
               <Field label="Objetivo" value={student.goal ?? '—'} />

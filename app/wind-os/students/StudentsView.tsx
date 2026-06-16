@@ -7,7 +7,7 @@ import Badge, { studentStatusBadge, modalidadeBadge, cefrBadge } from '@/compone
 import { IconSearch, IconPlus, IconEye, IconEdit, IconStudents } from '@/components/windos/Icons';
 import { EmptyState } from '@/components/windos/States';
 import { FormModal, FieldDef, FormValues } from '@/components/windos/Modal';
-import { dateBR } from '@/lib/windos/format';
+import { dateBR, brl } from '@/lib/windos/format';
 import { saveStudent } from '@/app/wind-os/actions';
 import type { Student } from '@/lib/windos/types';
 
@@ -21,6 +21,7 @@ interface Props {
 
 const CEFR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const STATUS = ['ATIVO', 'PAUSADO', 'CANCELADO', 'EXPERIMENTAL', 'INADIMPLENTE'];
+const PAYMENT_METHODS = ['PIX', 'BOLETO', 'CARTAO', 'DINHEIRO', 'TRANSFERENCIA', 'OUTRO'];
 
 export default function StudentsView({ students, teachers, classes, teacherNameById, classNameById }: Props) {
   const router = useRouter();
@@ -43,6 +44,9 @@ export default function StudentsView({ students, teachers, classes, teacherNameB
     { name: 'startDate', label: 'Data de entrada', type: 'date', half: true },
     { name: 'teacherId', label: 'Professor', type: 'select', half: true, options: teachers.map(t => ({ value: t.id, label: t.name })) },
     { name: 'classId', label: 'Turma', type: 'select', half: true, options: classes.map(c => ({ value: c.id, label: c.name })) },
+    { name: 'monthlyAmount', label: 'Valor da mensalidade (R$)', type: 'number', half: true, step: '0.01', min: 0, help: 'Usado para gerar as mensalidades no Financeiro.' },
+    { name: 'dueDay', label: 'Dia de vencimento', type: 'number', half: true, min: 1, max: 28 },
+    { name: 'paymentMethod', label: 'Forma de pagamento', type: 'select', half: true, options: PAYMENT_METHODS.map(m => ({ value: m, label: m })) },
     { name: 'goal', label: 'Objetivo', type: 'text' },
     { name: 'interests', label: 'Interesses', type: 'text' },
     { name: 'pedagogicalNotes', label: 'Observações pedagógicas', type: 'textarea' },
@@ -51,7 +55,9 @@ export default function StudentsView({ students, teachers, classes, teacherNameB
   const toInitial = (s: Student): FormValues => ({
     fullName: s.fullName, email: s.email, whatsapp: s.whatsapp, cpf: s.cpf ?? '', birthDate: s.birthDate ?? '',
     modalidade: s.modalidade, status: s.status, cefrLevel: s.cefrLevel, startDate: s.startDate ?? '',
-    teacherId: s.teacherId ?? '', classId: s.classId ?? '', goal: s.goal ?? '', interests: s.interests ?? '',
+    teacherId: s.teacherId ?? '', classId: s.classId ?? '',
+    monthlyAmount: String(s.monthlyAmount ?? 0), dueDay: String(s.dueDay ?? 5), paymentMethod: s.paymentMethod ?? 'PIX',
+    goal: s.goal ?? '', interests: s.interests ?? '',
     pedagogicalNotes: s.pedagogicalNotes ?? '',
   });
 
@@ -81,6 +87,7 @@ export default function StudentsView({ students, teachers, classes, teacherNameB
     { key: 'cefr', header: 'Nível', render: s => { const b = cefrBadge(s.cefrLevel); return <Badge label={b.label} variant={b.variant} />; } },
     { key: 'class', header: 'Turma', render: s => <span className="text-gray-600">{className(s.classId)}</span> },
     { key: 'teacher', header: 'Professor', render: s => <span className="text-gray-600">{teacherName(s.teacherId)}</span> },
+    { key: 'mensalidade', header: 'Mensalidade', render: s => s.monthlyAmount > 0 ? <span className="text-gray-700 font-medium">{brl(s.monthlyAmount)}</span> : <span className="text-gray-300">—</span> },
     { key: 'start', header: 'Entrada', render: s => <span className="text-gray-500 text-xs">{dateBR(s.startDate)}</span> },
     { key: 'status', header: 'Status', render: s => { const b = studentStatusBadge(s.status); return <Badge label={b.label} variant={b.variant} />; } },
     {

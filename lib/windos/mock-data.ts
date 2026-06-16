@@ -31,7 +31,7 @@ export const classes: SchoolClass[] = [
 ];
 
 // ─── Alunos ───────────────────────────────────────────────────
-export const students: Student[] = [
+const studentsRaw: Omit<Student, 'monthlyAmount' | 'dueDay' | 'paymentMethod'>[] = [
   // ONLINE
   { id: 's1', fullName: 'Ana Beatriz Carvalho', birthDate: '1998-04-12', cpf: '111.222.333-44', email: 'ana.carvalho@email.com', whatsapp: '+55 81 98111-0001', modalidade: 'ONLINE', status: 'ATIVO', cefrLevel: 'B2', teacherId: 't1', classId: 'c1', startDate: '2025-08-05', goal: 'Fluência para entrevistas internacionais', interests: 'Séries, viagens, tecnologia', pedagogicalNotes: 'Ótima produção oral, melhorar writing formal.', createdAt: '2025-08-05', updatedAt: '2026-06-01' },
   { id: 's2', fullName: 'Lucas Pereira Souza', birthDate: '1995-09-30', email: 'lucas.souza@email.com', whatsapp: '+55 81 98111-0002', modalidade: 'ONLINE', status: 'ATIVO', cefrLevel: 'B2', teacherId: 't1', classId: 'c1', startDate: '2025-08-10', goal: 'Promoção no trabalho', interests: 'Games, música', createdAt: '2025-08-10', updatedAt: '2026-06-01' },
@@ -45,6 +45,10 @@ export const students: Student[] = [
   { id: 's9', fullName: 'Camila Ribeiro Santos', birthDate: '2004-02-28', email: 'camila.santos@email.com', whatsapp: '+55 81 98111-0009', modalidade: 'PRESENCIAL', status: 'INADIMPLENTE', cefrLevel: 'A1', teacherId: 't3', classId: 'c4', startDate: '2026-02-05', goal: 'Vestibular e intercâmbio', interests: 'K-pop, idiomas', pedagogicalNotes: 'Família sem retorno sobre renegociação.', createdAt: '2026-02-05', updatedAt: '2026-06-12' },
   { id: 's10', fullName: 'Thiago Almeida Pinto', birthDate: '1996-10-08', email: 'thiago.pinto@email.com', whatsapp: '+55 81 98111-0010', modalidade: 'PRESENCIAL', status: 'CANCELADO', cefrLevel: 'A1', teacherId: 't3', classId: 'c4', startDate: '2026-01-10', goal: 'Curso básico', interests: 'Carros, trilhas', pedagogicalNotes: 'Cancelou por mudança de cidade.', createdAt: '2026-01-10', updatedAt: '2026-05-30' },
 ];
+
+export const students: Student[] = studentsRaw.map(s => ({
+  ...s, monthlyAmount: 0, dueDay: 5, paymentMethod: 'PIX' as const,
+}));
 
 // ─── Responsáveis ─────────────────────────────────────────────
 export const guardians: Guardian[] = [

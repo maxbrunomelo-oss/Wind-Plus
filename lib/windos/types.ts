@@ -78,6 +78,9 @@ export interface Student {
   teacherId?: string;
   classId?: string;
   startDate: string;
+  monthlyAmount: number;
+  dueDay: number;
+  paymentMethod: PaymentMethod;
   goal?: string;
   interests?: string;
   pedagogicalNotes?: string;

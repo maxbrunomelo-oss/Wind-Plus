@@ -30,7 +30,10 @@ const mapStudent = (r: any): Student => ({
   id: r.id, fullName: r.full_name, birthDate: und(r.birth_date), cpf: und(r.cpf),
   email: r.email, whatsapp: r.whatsapp, modalidade: r.modalidade, status: r.status,
   cefrLevel: r.cefr_level, teacherId: und(r.teacher_id), classId: und(r.class_id),
-  startDate: r.start_date, goal: und(r.goal), interests: und(r.interests),
+  startDate: r.start_date,
+  monthlyAmount: Number(r.monthly_amount ?? 0), dueDay: r.due_day ?? 5,
+  paymentMethod: r.payment_method ?? 'PIX',
+  goal: und(r.goal), interests: und(r.interests),
   pedagogicalNotes: und(r.pedagogical_notes),
   createdAt: r.created_at, updatedAt: r.updated_at,
 });
