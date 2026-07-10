@@ -24,36 +24,40 @@ export default function PlacementTestPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+    <div className="min-h-screen flex flex-col bg-[#050505]">
+
+      {/* ── Header premium dark ─────────────────────────────────────── */}
+      <header className="relative z-50 border-b border-white/[0.06]">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <Image
               src="/logo-wind-plus-hd.png"
               alt="Wind Plus"
-              width={56}
-              height={56}
+              width={40}
+              height={40}
               priority
-              className="h-14 w-14 object-contain"
+              className="h-10 w-10 object-contain"
             />
-            <span className="text-[11px] text-gray-400 uppercase tracking-widest">Escola de Inglês</span>
+            <span className="text-[10px] font-medium text-white/30 uppercase tracking-[0.22em]">
+              Escola de Inglês
+            </span>
           </div>
-          <span className="hidden sm:inline-block text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+          <div className="hidden sm:flex items-center gap-2 text-[11px] text-white/30 border border-white/[0.08] px-3 py-1.5 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E30613] animate-pulse shrink-0" />
             Teste de Nivelamento CEFR
-          </span>
+          </div>
         </div>
       </header>
 
-      {/* Content */}
-      <main className="flex-1 py-10 px-4">
+      {/* ── Main ────────────────────────────────────────────────────── */}
+      <main className="flex-1">
         <PlacementTestForm />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-100 py-5 text-center">
-        <p className="text-xs text-gray-400">
-          © {new Date().getFullYear()} Wind Plus. Todos os direitos reservados.
+      {/* ── Footer ──────────────────────────────────────────────────── */}
+      <footer className="border-t border-white/[0.05] py-5 text-center">
+        <p className="text-[11px] text-white/15">
+          © {new Date().getFullYear()} Wind Plus · Todos os direitos reservados.
         </p>
       </footer>
     </div>

@@ -160,95 +160,182 @@ export default function PlacementTestForm() {
 
   // ── INTRO ──────────────────────────────────────────────────────────────────
   if (step === "intro") {
+    const cefrLevels = [
+      { id: "A1", desc: "Iniciante",      d: "wp-d3" },
+      { id: "A2", desc: "Básico",         d: "wp-d4" },
+      { id: "B1", desc: "Intermediário",  d: "wp-d5" },
+      { id: "B2", desc: "Intermediário+", d: "wp-d6" },
+      { id: "C1", desc: "Avançado",       d: "wp-d7" },
+      { id: "C2", desc: "Fluente",        d: "wp-d8" },
+    ];
+
     return (
-      <div className="text-center max-w-2xl mx-auto py-10 px-4">
+      <div className="relative min-h-[calc(100vh-68px)] flex items-center overflow-hidden">
 
-        {/* Logos */}
-        <div className="flex items-center justify-center gap-10 mb-10">
-          {/* Wind Plus logo + stacked wordmark */}
-          <div className="flex flex-col items-center gap-1">
-            <Image
-              src="/logo-wind-plus-hd.png"
-              alt="Wind Plus"
-              width={110}
-              height={110}
-              className="object-contain drop-shadow-md"
-            />
-            <WindPlusWordmark
-              variant="stacked"
-              windSize="text-2xl"
-              plusSize="text-[11px]"
-              windColor="text-[#111111]"
-              plusColor="text-[#E30613]"
-            />
-          </div>
+        {/* ── Background: subtle grid ── */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px)," +
+              "linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+          }}
+        />
 
-          {/* Divider */}
-          <div className="w-px h-20 bg-gray-200" />
+        {/* ── Red ambient glow ── */}
+        <div
+          aria-hidden="true"
+          className="absolute pointer-events-none wp-glow"
+          style={{
+            top: "50%", left: "55%",
+            transform: "translate(-50%, -50%)",
+            width: 700, height: 700,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(227,6,19,0.07) 0%, transparent 65%)",
+          }}
+        />
 
-          {/* CEFR badge */}
-          <div className="flex flex-col items-center gap-2">
-            {/* Stars ring + CEFR text */}
-            <div className="relative flex items-center justify-center w-[110px] h-[110px]">
-              {/* Outer ring of stars */}
-              <svg viewBox="0 0 110 110" className="absolute inset-0 w-full h-full" aria-hidden="true">
-                <circle cx="55" cy="55" r="52" fill="none" stroke="#003399" strokeWidth="2.5" />
-                {Array.from({ length: 12 }).map((_, i) => {
-                  const angle = (i * 30 - 90) * (Math.PI / 180);
-                  const cx = 55 + 44 * Math.cos(angle);
-                  const cy = 55 + 44 * Math.sin(angle);
-                  return (
-                    <text key={i} x={cx} y={cy} textAnchor="middle" dominantBaseline="central" fontSize="9" fill="#FFCC00">★</text>
-                  );
-                })}
-              </svg>
-              {/* Inner text */}
-              <div className="flex flex-col items-center leading-none z-10">
-                <span className="text-[22px] font-black text-[#003399] tracking-tight">CEFR</span>
-                <span className="text-[7px] font-bold text-[#003399] uppercase tracking-widest text-center leading-tight mt-0.5">Common European<br/>Framework</span>
+        {/* ── Decorative pixel blocks ── */}
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* top-right cluster */}
+          <div className="absolute top-[8%] right-[7%]  w-3   h-3   bg-[#E30613] opacity-70 wp-pixel-float" />
+          <div className="absolute top-[12%] right-[10%] w-1.5 h-1.5 bg-[#E30613] opacity-35" />
+          <div className="absolute top-[7%]  right-[5%]  w-10  h-10  border border-[#E30613]/15 rounded-sm" />
+          <div className="absolute top-[16%] right-[6%]  w-5   h-5   border border-white/8 rounded-sm" />
+          {/* left side */}
+          <div className="absolute top-[35%] left-[2%]   w-1   h-20  bg-gradient-to-b from-transparent via-[#E30613]/25 to-transparent" />
+          <div className="absolute bottom-[25%] left-[4%] w-2  h-2   bg-white opacity-10 wp-pixel-float" style={{animationDelay:"1.5s"}} />
+          <div className="absolute bottom-[18%] left-[6%] w-5  h-1   bg-[#E30613] opacity-40" />
+          {/* bottom-right */}
+          <div className="absolute bottom-[12%] right-[8%] w-4  h-4  border border-white/8 rounded-sm" />
+          <div className="absolute bottom-[8%]  right-[5%] w-1.5 h-1.5 bg-[#E30613] opacity-50" />
+          {/* large faint frames */}
+          <div className="absolute -top-10 -right-10 w-64 h-64 border border-white/[0.03]" />
+          <div className="absolute -bottom-6 -left-6  w-40 h-40 border border-white/[0.03]" />
+        </div>
+
+        {/* ── Main content grid ── */}
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-6 py-16 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 xl:gap-24 items-center">
+
+            {/* ══ LEFT: Text content ══ */}
+            <div className="flex flex-col gap-7">
+
+              {/* Eyebrow */}
+              <div className="wp-fade-up inline-flex items-center gap-2.5 w-fit border border-white/[0.1] bg-white/[0.04] rounded-full px-4 py-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E30613] shrink-0" />
+                <span className="text-[11px] font-medium text-white/45 uppercase tracking-[0.18em]">
+                  Diagnóstico CEFR · Gratuito
+                </span>
+              </div>
+
+              {/* Title */}
+              <div className="wp-fade-up wp-d1">
+                <h1
+                  className="text-5xl md:text-6xl xl:text-[70px] font-black text-white leading-[1.02] tracking-[-0.025em]"
+                  style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+                >
+                  Descubra<br />
+                  o seu nível<br />
+                  <span className="text-[#E30613]">de Inglês</span>
+                </h1>
+              </div>
+
+              {/* Subtitle */}
+              <p className="wp-fade-up wp-d2 text-white/45 text-base lg:text-[17px] leading-relaxed max-w-[420px]">
+                Faça um teste rápido baseado no CEFR e receba uma orientação inicial sobre o seu nível de fluência.
+              </p>
+
+              {/* Warning card */}
+              <div className="wp-fade-up wp-d3 flex gap-3 items-start bg-white/[0.03] border border-white/[0.07] rounded-xl p-4 lg:p-5">
+                <div className="shrink-0 w-6 h-6 rounded-md bg-[#E30613]/12 border border-[#E30613]/25 flex items-center justify-center mt-0.5">
+                  <span className="text-[#E30613] text-[11px] font-black leading-none">!</span>
+                </div>
+                <p className="text-white/38 text-sm leading-relaxed">
+                  <span className="text-white/58 font-semibold">Aviso importante —</span>{" "}
+                  Este teste é uma avaliação diagnóstica inicial. Ele não substitui uma certificação oficial de proficiência, mas ajuda nossa equipe pedagógica a indicar a melhor turma para o seu perfil.
+                </p>
+              </div>
+
+              {/* CTA */}
+              <div className="wp-fade-up wp-d4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <button
+                  onClick={() => setStep("form")}
+                  className="wp-cta group relative overflow-hidden bg-[#E30613] text-white font-semibold px-8 py-4 rounded-xl text-[15px] transition-all duration-300 hover:bg-[#C5000E] shadow-[0_0_32px_rgba(227,6,19,0.22)] hover:shadow-[0_0_48px_rgba(227,6,19,0.38)] hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2.5"
+                >
+                  <span>Começar teste de nivelamento</span>
+                  <span className="transition-transform duration-300 group-hover:translate-x-1 text-lg leading-none">→</span>
+                  <span className="wp-cta-shimmer" aria-hidden="true" />
+                </button>
+                <p className="text-white/22 text-xs tracking-wide">Aprox. 15 minutos · Gratuito</p>
               </div>
             </div>
-            {/* Level badges */}
-            <div className="grid grid-cols-3 gap-1 mt-1">
-              {[
-                { label: "A1", bg: "#5BC8C1" },
-                { label: "B1", bg: "#F5C242" },
-                { label: "C1", bg: "#4A90D9" },
-                { label: "A2", bg: "#6BBF6A" },
-                { label: "B2", bg: "#4CAF50" },
-                { label: "C2", bg: "#E8943A" },
-              ].map(({ label, bg }) => (
+
+            {/* ══ RIGHT: Visual panel ══ */}
+            <div className="wp-fade-in wp-d2 flex flex-col items-center gap-10">
+
+              {/* Brand display */}
+              <div className="relative flex flex-col items-center gap-3">
                 <div
-                  key={label}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-black shadow-sm"
-                  style={{ backgroundColor: bg }}
-                >
-                  {label}
-                </div>
-              ))}
+                  aria-hidden="true"
+                  className="absolute -inset-8 rounded-full"
+                  style={{ background: "radial-gradient(circle, rgba(227,6,19,0.14) 0%, transparent 70%)" }}
+                />
+                <Image
+                  src="/logo-wind-plus-hd.png"
+                  alt="Wind Plus"
+                  width={130}
+                  height={130}
+                  className="relative object-contain drop-shadow-2xl"
+                />
+                <WindPlusWordmark
+                  variant="stacked"
+                  windSize="text-3xl"
+                  plusSize="text-[13px]"
+                  windColor="text-white"
+                  plusColor="text-[#E30613]"
+                />
+              </div>
+
+              {/* Divider */}
+              <div className="w-full flex items-center gap-4 max-w-[320px]">
+                <div className="flex-1 h-px bg-white/[0.07]" />
+                <span className="text-[9px] font-medium text-white/25 uppercase tracking-[0.22em] whitespace-nowrap">
+                  Framework de Referência
+                </span>
+                <div className="flex-1 h-px bg-white/[0.07]" />
+              </div>
+
+              {/* CEFR levels grid */}
+              <div className="grid grid-cols-3 gap-2.5 w-full max-w-[320px]">
+                {cefrLevels.map(({ id, desc, d }) => (
+                  <div
+                    key={id}
+                    className={`wp-fade-up ${d} wp-cefr-card relative group bg-white/[0.04] hover:bg-[#E30613]/[0.08] border border-white/[0.08] hover:border-[#E30613]/30 rounded-lg p-3 text-center transition-all duration-300 cursor-default overflow-hidden`}
+                  >
+                    <div
+                      className="font-black text-xl text-white/85 group-hover:text-white transition-colors duration-200"
+                      style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
+                    >
+                      {id}
+                    </div>
+                    <div className="text-[9px] text-white/25 group-hover:text-white/40 mt-0.5 leading-tight transition-colors duration-200">
+                      {desc}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom label */}
+              <p className="text-[9px] text-white/18 uppercase tracking-[0.22em]">
+                Common European Framework of Reference
+              </p>
             </div>
+
           </div>
         </div>
-
-        {/* Headline */}
-        <h1 className="text-3xl md:text-4xl font-bold text-[#111111] mb-3 leading-tight">
-          Descubra o seu nível de Inglês
-        </h1>
-        <p className="text-gray-500 text-base md:text-lg mb-6 leading-relaxed">
-          Faça um teste rápido baseado no CEFR e receba uma orientação inicial sobre o seu nível de fluência.
-        </p>
-
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 mb-8 text-left">
-          <strong>Aviso importante:</strong> Este teste é uma avaliação diagnóstica inicial. Ele não substitui uma certificação oficial de proficiência, mas ajuda nossa equipe pedagógica a indicar a melhor turma para o seu perfil.
-        </div>
-
-        <button
-          onClick={() => setStep("form")}
-          className="bg-[#E30613] hover:bg-[#B8000D] text-white font-semibold px-8 py-4 rounded-xl text-base transition-colors shadow-md"
-        >
-          Começar teste de nivelamento
-        </button>
-        <p className="text-xs text-gray-400 mt-4">Aproximadamente 15 minutos · Gratuito</p>
       </div>
     );
   }
@@ -256,7 +343,7 @@ export default function PlacementTestForm() {
   // ── FORM ───────────────────────────────────────────────────────────────────
   if (step === "form") {
     return (
-      <form onSubmit={handleFormSubmit} noValidate className="max-w-lg mx-auto space-y-5 px-4 py-6">
+      <form onSubmit={handleFormSubmit} noValidate className="max-w-lg mx-auto space-y-5 px-4 py-8 my-8 bg-white rounded-2xl shadow-[0_8px_60px_rgba(0,0,0,0.55)]">
         <h2 className="text-xl font-bold text-[#111111]">Suas informações</h2>
         <p className="text-sm text-gray-500 -mt-2">Preencha abaixo para começar o teste.</p>
 
@@ -343,7 +430,7 @@ export default function PlacementTestForm() {
   if (step === "test") {
     const selectedOption = answers[currentQuestion.id] ?? null;
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 py-8 my-8 space-y-6 bg-white rounded-2xl shadow-[0_8px_60px_rgba(0,0,0,0.55)]">
         <ProgressBar current={currentQuestionIdx + 1} total={totalQuestions} />
         <QuestionCard question={currentQuestion} selectedOption={selectedOption} onSelect={handleSelectOption} />
         <div className="flex justify-between gap-4">
@@ -363,7 +450,7 @@ export default function PlacementTestForm() {
   // ── WRITING ────────────────────────────────────────────────────────────────
   if (step === "writing") {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 py-8 my-8 space-y-6 bg-white rounded-2xl shadow-[0_8px_60px_rgba(0,0,0,0.55)]">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
           <span className="inline-block bg-[#E30613]/10 text-[#E30613] text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
             Produção Escrita
@@ -408,7 +495,7 @@ export default function PlacementTestForm() {
   // ── RESULT ─────────────────────────────────────────────────────────────────
   if (step === "result" && result) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-2xl mx-auto px-4 py-8 my-8 bg-white rounded-2xl shadow-[0_8px_60px_rgba(0,0,0,0.55)]">
         <ResultCard {...result} studentName={studentInfo.studentName} />
       </div>
     );

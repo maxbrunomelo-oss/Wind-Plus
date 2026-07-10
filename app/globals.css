@@ -54,3 +54,76 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── Wind Plus — Placement Test Premium Animations ──────────────────────── */
+
+@keyframes wp-fade-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes wp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes wp-glow-pulse {
+  0%, 100% { opacity: 0.12; transform: scale(1); }
+  50%       { opacity: 0.22; transform: scale(1.04); }
+}
+
+@keyframes wp-pixel-drift {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  40%       { transform: translateY(-7px) rotate(0.8deg); }
+  70%       { transform: translateY(3px) rotate(-0.4deg); }
+}
+
+@keyframes wp-shimmer {
+  from { transform: translateX(-100%) skewX(-12deg); }
+  to   { transform: translateX(250%) skewX(-12deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wp-fade-up,
+  .wp-fade-in,
+  .wp-pixel-float,
+  .wp-glow { animation-duration: 0.01ms !important; }
+}
+
+.wp-fade-up   { animation: wp-fade-up  0.65s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.wp-fade-in   { animation: wp-fade-in  0.55s ease both; }
+.wp-pixel-float { animation: wp-pixel-drift 6s ease-in-out infinite; }
+.wp-glow      { animation: wp-glow-pulse 3.5s ease-in-out infinite; }
+
+.wp-d1  { animation-delay: 0.08s; }
+.wp-d2  { animation-delay: 0.16s; }
+.wp-d3  { animation-delay: 0.24s; }
+.wp-d4  { animation-delay: 0.32s; }
+.wp-d5  { animation-delay: 0.40s; }
+.wp-d6  { animation-delay: 0.48s; }
+.wp-d7  { animation-delay: 0.56s; }
+.wp-d8  { animation-delay: 0.64s; }
+
+/* CEFR card hover bottom accent */
+.wp-cefr-card::after {
+  content: '';
+  position: absolute;
+  inset-x: 0;
+  bottom: 0;
+  height: 2px;
+  background: #E30613;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  border-radius: 0 0 8px 8px;
+}
+.wp-cefr-card:hover::after { transform: scaleX(1); }
+
+/* CTA button shimmer */
+.wp-cta-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  transform: translateX(-100%) skewX(-12deg);
+}
+.wp-cta:hover .wp-cta-shimmer { animation: wp-shimmer 0.65s ease forwards; }
