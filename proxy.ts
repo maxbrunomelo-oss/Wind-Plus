@@ -60,11 +60,34 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Protect Lab platform routes (except /lab/login)
+  const LAB_PROTECTED = ["/aluno", "/professor", "/lab/dashboard", "/lab/alunos", "/lab/professores", "/lab/turmas", "/lab/atividades", "/lab/relatorios"];
+  const isLabProtected = LAB_PROTECTED.some((p) => request.nextUrl.pathname.startsWith(p));
+  if (isLabProtected) {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll() {},
+        },
+      }
+    );
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      const loginUrl = new URL("/lab/login", request.url);
+      loginUrl.searchParams.set("next", request.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    // is_active check is handled inside signIn action — session only exists for active users
+  }
+
   return response;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|assets/|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js|html)$).*)",
   ],
 };
